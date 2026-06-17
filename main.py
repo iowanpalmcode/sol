@@ -5,7 +5,7 @@ import json
 import os
 
 # --- PERSISTENCE SYSTEM (SAVE/LOAD) ---
-# SAVE_FILE = "savegame.json"
+SAVE_FILE = "savegame.json"
 
 def save_game():
     """Saves the current session state to a JSON file."""
