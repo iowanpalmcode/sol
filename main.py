@@ -28,7 +28,6 @@ def load_game():
             st.session_state.ship_level = data.get("ship_level", 1)
             st.session_state.location = data.get("location", "Earth")
     else:
-        # Default starting values if no save file exists
         st.session_state.inventory = {}
         st.session_state.credits = 0
         st.session_state.ship_level = 1
@@ -111,33 +110,34 @@ randomeventdict = {
     "Asteroid Mining": {"description": "Found rich minerals!", "effect": lambda: (random.randint(100, 300), {"Asteroid Ore": 1})}
 }
 
+# Updated customers to want MEALS (Recipes) instead of Ingredients
 customers = [
-    {"planet": "Earth", "name": "Earthling", "preferences": ["Water", "Food"], "credits": 150},
-    {"planet": "Earth", "name": "Hungry Man", "preferences": ["Water", "Iron"], "credits": 150},
-    {"planet": "Earth", "name": "Gym Bro", "preferences": ["Food", "Iron","Salt"], "credits": 150},
-    {"planet": "Earth", "name": "Health Nut", "preferences": ["Water", "Oxygen","Glacial Truffles"], "credits": 150},
-    {"planet": "Mars", "name": "Martian", "preferences": ["Iron", "Silicon"], "credits": 200},
-    {"planet": "Mars", "name": "Space Miner", "preferences": ["Iron", "Heavy"], "credits": 200},
-    {"planet": "Venus", "name": "Venusian", "preferences": ["Sulfuric Acid", "Carbon Dioxide"], "credits": 250},
-    {"planet": "55 Cancri e", "name": "Cancrian", "preferences": ["Diamond", "Salt"], "credits": 300},
-    {"planet": "WASP-76b", "name": "WASPian", "preferences": ["Iron", "Rain"], "credits": 350},
-    {"planet": "Kepler-10b", "name": "Keplerian", "preferences": ["Magma", "Marmalade"], "credits": 400},
-    {"planet": "Gliese 436 b", "name": "Gliesian", "preferences": ["Burning", "Ice"], "credits": 450},
-    {"planet": "CoRoT-7b", "name": "CoRoTian", "preferences": ["Heavy", "Metal"], "credits": 500},
-    {"planet": "Kepler-22b", "name": "Kepler-22ian", "preferences": ["Abyssal Kelp"], "credits": 550},
-    {"planet": "K2-18b", "name": "K2-18ian", "preferences": ["Hydrogen-Mist Honey"], "credits": 600},
-    {"planet": "GJ 1214 b", "name": "GJ 1214ian", "preferences": ["Steam-Condensed Sugar"], "credits": 650},
-    {"planet": "LHS 1140 b", "name": "LHS 1140ian", "preferences": ["Glacial Truffles"], "credits": 700},
-    {"planet": "TRAPPIST-1e", "name": "TRAPPISTian", "preferences": ["Tidal-Lock Tea Leaves"], "credits": 750},
-    {"planet": "HD 189733 b", "name": "HD 189733ian", "preferences": ["Cobalt Glass Shards"], "credits": 800},
-    {"planet": "WASP-12b", "name": "WASP-12ian", "preferences": ["Egg-Shaped Essence"], "credits": 850},
-    {"planet": "Kepler-16b", "name": "Kepler-16ian", "preferences": ["Binary-Sun Saffron"], "credits": 900},
-    {"planet": "WASP-17b", "name": "WASP-17ian", "preferences": ["Puffy-Cloud Flour"], "credits": 950},
-    {"planet": "PSR B1257+12 c", "name": "PSR B1257+12ian", "preferences": ["Gamma-Ray Garlic"], "credits": 1000},
-    {"planet": "Proxima Centauri b", "name": "Proxima Centaurian", "preferences": ["Red-Dwarf Berries"], "credits": 1050},
-    {"planet": "Kepler-452b", "name": "Kepler-452ian", "preferences": ["Ancient Solar Grain"], "credits": 1100},
-    {"planet": "TRAPPIST-1f", "name": "TRAPPIST-1fian", "preferences": ["Frost-Bloom Flower"], "credits": 1150},
-    {"planet": "Teegarden's Star b", "name": "Teegarden's Starian", "preferences": ["Velvet Moss"], "credits": 1250},
+    {"planet": "Earth", "name": "Earthling", "preferences": ["Space Stew"], "credits": 150},
+    {"planet": "Earth", "name": "Hungry Man", "preferences": ["Cosmopolitan Ice Cream"], "credits": 150},
+    {"planet": "Earth", "name": "Gym Bro", "preferences": ["Space Stew"], "credits": 150},
+    {"planet": "Earth", "name": "Health Nut", "preferences": ["Cosmopolitan Ice Cream"], "credits": 150},
+    {"planet": "Mars", "name": "Martian", "preferences": ["Martian Salad"], "credits": 200},
+    {"planet": "Mars", "name": "Space Miner", "preferences": ["Martian Salad"], "credits": 200},
+    {"planet": "Venus", "name": "Venusian", "preferences": ["Venusian Soup"], "credits": 250},
+    {"planet": "55 Cancri e", "name": "Cancrian", "preferences": ["Exoplanet Elixir"], "credits": 300},
+    {"planet": "WASP-76b", "name": "WASPian", "preferences": ["Nebula Nachos"], "credits": 350},
+    {"planet": "Kepler-10b", "name": "Keplerian", "preferences": ["Galactic Gumbo"], "credits": 400},
+    {"planet": "Gliese 436 b", "name": "Gliesian", "preferences": ["The Hot Stuff"], "credits": 450},
+    {"planet": "CoRoT-7b", "name": "CoRoTian", "preferences": ["Nebula Noodles"], "credits": 500},
+    {"planet": "Kepler-22b", "name": "Kepler-22ian", "preferences": ["Lunar Lasagna"], "credits": 550},
+    {"planet": "K2-18b", "name": "K2-18ian", "preferences": ["Solar Flare Fajitas"], "credits": 600},
+    {"planet": "GJ 1214 b", "name": "GJ 1214ian", "preferences": ["Solar Flare Fajitas"], "credits": 650},
+    {"planet": "LHS 1140 b", "name": "LHS 1140ian", "preferences": ["Lunar Lasagna"], "credits": 700},
+    {"planet": "TRAPPIST-1e", "name": "TRAPPISTian", "preferences": ["Stellar Stir-Fry"], "credits": 750},
+    {"planet": "HD 189733 b", "name": "HD 189733ian", "preferences": ["Meteorite Meatballs"], "credits": 800},
+    {"planet": "WASP-12b", "name": "WASP-12ian", "preferences": ["Astro Omelette"], "credits": 850},
+    {"planet": "Kepler-16b", "name": "Kepler-16ian", "preferences": ["Binary-Sun Paella"], "credits": 900},
+    {"planet": "WASP-17b", "name": "WASP-17ian", "preferences": ["Puffy-Cloud Pancakes"], "credits": 950},
+    {"planet": "PSR B1257+12 c", "name": "PSR B1257+12ian", "preferences": ["Gamma-Ray Risotto"], "credits": 1000},
+    {"planet": "Proxima Centauri b", "name": "Proxima Centaurian", "preferences": ["Red-Dwarf Jam"], "credits": 1050},
+    {"planet": "Kepler-452b", "name": "Kepler-452ian", "preferences": ["Ancient Solar Bread"], "credits": 1100},
+    {"planet": "TRAPPIST-1f", "name": "TRAPPIST-1fian", "preferences": ["Frost-Bloom Sorbet"], "credits": 1150},
+    {"planet": "Teegarden's Star b", "name": "Teegarden's Starian", "preferences": ["Velvet Moss Salad"], "credits": 1250},
 ]
 
 customeremojis = {
@@ -150,7 +150,6 @@ customeremojis = {
 }
 
 # --- INITIALIZE SESSION STATE ---
-# Load from file immediately
 load_game()
 
 if 'active_customers' not in st.session_state: 
@@ -159,7 +158,8 @@ if 'active_customers' not in st.session_state:
 st.set_page_config(page_title="Cosmopolitan", page_icon="🚀", layout="wide")
 st.title("🚀 Cosmopolitan")
 
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["🌌 Explore", "🍳 Cook","📦 Cargo","📖 Ingredients","📖 Recipes","🥄 Restaurant"])
+# Removed "Ingredients" tab
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["🌌 Explore", "🍳 Cook","📦 Cargo","📖 Recipes","🥄 Restaurant"])
 
 with st.sidebar:
     st.header("Ship Status")
@@ -170,11 +170,15 @@ with st.sidebar:
         if st.session_state.credits >= cost:
             st.session_state.credits -= cost
             st.session_state.ship_level += 1
-            save_game() # SAVE after upgrade
+            save_game()
             st.success("Ship upgraded!")
             st.rerun()
         else:
             st.error("Not enough credits!")
+    st.write(f"Current Location: {st.session_state.location}")
+    # Tutorial
+    st.write("---")
+    st.write("Welcome to Cosmopolitan! Explore different planets, gather ingredients, and cook delicious dishes.")
 
 def random_event():
     choice = random.choice(list(randomeventdict.keys()))
@@ -194,7 +198,7 @@ def random_event():
         st.session_state.credits += credit_change
         for item, qty in item_change.items():
             st.session_state.inventory[item] = st.session_state.inventory.get(item, 0) + qty
-    save_game() # SAVE after event
+    save_game()
 
 with tab1:
     st.header("Explore")
@@ -214,7 +218,7 @@ with tab1:
         for ing in PLANET_INFO[planet]["ingredients"]:
             st.session_state.inventory[ing] = st.session_state.inventory.get(ing, 0) + 1
         st.success(f"Gathered: {', '.join(PLANET_INFO[planet]['ingredients'])}")
-        save_game() # SAVE after gathering
+        save_game()
         random_event()
 
 with tab2:
@@ -226,32 +230,33 @@ with tab2:
             for ing in required:
                 st.session_state.inventory[ing] -= 1
             st.session_state.inventory[recipe] = st.session_state.inventory.get(recipe, 0) + 1
-            save_game() # SAVE after cooking
+            save_game()
             st.success(f"Cooked {recipe}!")
         else:
             st.error("Missing ingredients!")
 
 with tab3:
     st.header("Cargo")
-    planet_filter = st.selectbox("Filter cargo by planet:", ["All"] + list(PLANET_INFO.keys()))
+    # Enhanced planet filter
+    planet_filter = st.selectbox("Filter cargo by planet of origin:", ["All"] + list(PLANET_INFO.keys()))
+    
+    # Determine which items to show
+    all_items = list(st.session_state.inventory.items())
+    
     if planet_filter != "All":
-        cargo_options = [ing for ing in st.session_state.inventory if ing in PLANET_INFO[planet_filter]["ingredients"]]
+        allowed_ingredients = PLANET_INFO[planet_filter]["ingredients"]
+        # Show items that are either part of that planet's ingredients or are Recipes (since they contain ingredients)
+        cargo_options = [item for item, qty in all_items if item in allowed_ingredients]
+        st.write(f"Showing items from {planet_filter}:")
     else:
-        cargo_options = list(st.session_state.inventory.keys())
+        cargo_options = [item for item, qty in all_items]
+
+    if not cargo_options:
+        st.write("Cargo hold is empty or no matching items found.")
     for ing in cargo_options:
         st.write(f"{ing}: {st.session_state.inventory[ing]} units")
 
 with tab4:
-    st.header("Ingredients")
-    planet_filter = st.selectbox("Filter ingredients by planet:", ["All"] + list(PLANET_INFO.keys()))
-    if planet_filter != "All":
-        inventory_options = [ing for ing in st.session_state.inventory if ing in PLANET_INFO[planet_filter]["ingredients"]]
-    else:
-        inventory_options = list(st.session_state.inventory.keys())
-    for ing in inventory_options:
-        st.write(f"{ing}: {st.session_state.inventory[ing]} units")
-
-with tab5:
     st.header("Recipe Book")
     ingredient_filter = st.multiselect("Filter recipes by ingredients:", list(set(ing for r in RECIPES.values() for ing in r["ingredients"])))
     if ingredient_filter:
@@ -262,17 +267,18 @@ with tab5:
         st.write(f"**{r}** (Requires: {', '.join(RECIPES[r]['ingredients'])}, Rewards: {RECIPES[r]['credits']} credits)")
 
 # --- RESTAURANT TAB ---
-with tab6:
+with tab5:
     st.header("Restaurant")
     
+    # Check if customers want MEALS the player actually has
     if not st.session_state.active_customers:
-        potential = [c for c in customers if all(st.session_state.inventory.get(ing, 0) > 0 for ing in c["preferences"])]
+        potential = [c for c in customers if all(st.session_state.inventory.get(meal, 0) > 0 for meal in c["preferences"])]
         if potential:
             selected = random.sample(potential, min(3, len(potential)))
             for s in selected:
                 st.session_state.active_customers.append({"data": s, "arrival_time": time.time()})
         else:
-            st.write("No customers are visiting right now.")
+            st.write("No customers are visiting right now (maybe cook some meals first!).")
 
     if st.session_state.active_customers:
         container = st.container()
@@ -290,36 +296,36 @@ with tab6:
                 col1, col2, col3 = st.columns([3, 1, 1])
                 with col1:
                     emoji = customeremojis.get(customer['planet'], "🚀")
+                    # Changed "Wants" to show the actual Meal
                     st.write(f"**{customer['name']}** {emoji} (Wants: {', '.join(customer['preferences'])})")
                 with col2:
                     st.write(f"⏳ {remaining}s")
                 with col3:
                     st.write(f"Reward: {customer['credits']}¢")
                     if st.button(f"Serve", key=f"serve_{idx}"):
-                        if all(st.session_state.inventory.get(ing, 0) > 0 for ing in customer["preferences"]):
-                            for ing in customer["preferences"]:
-                                st.session_state.inventory[ing] -= 1
+                        # Check if the completed meal is in inventory
+                        if all(st.session_state.inventory.get(meal, 0) > 0 for meal in customer["preferences"]):
+                            for meal in customer["preferences"]:
+                                st.session_state.inventory[meal] -= 1
                             st.session_state.credits += customer["credits"]
-                            save_game() # SAVE after serving
+                            save_game()
                             st.session_state.active_customers.pop(idx)
-                            potential = [c for c in customers if all(st.session_state.inventory.get(ing, 0) > 0 for ing in c["preferences"])]
+                            
+                            # Try to spawn a replacement
+                            potential = [c for c in customers if all(st.session_state.inventory.get(meal, 0) > 0 for meal in c["preferences"])]
                             if potential:
                                 new_c = random.choice(potential)
                                 st.session_state.active_customers.append({"data": new_c, "arrival_time": time.time()})
                             st.rerun()
                         else:
-                            st.error("Missing ingredients!")
+                            st.error("You don't have the prepared meal!")
 
             if leaving_indices:
                 for index in sorted(leaving_indices, reverse=True):
                     cust_who_left = st.session_state.active_customers.pop(index)
                     st.session_state.credits = max(0, st.session_state.credits - 50)
-                    save_game() # SAVE after penalty
+                    save_game()
                     st.warning(f"{cust_who_left['data']['name']} left! Lost 50 credits.")
-                    potential = [c for c in customers if all(st.session_state.inventory.get(ing, 0) > 0 for ing in c["preferences"])]
-                    if potential:
-                        new_c = random.choice(potential)
-                        st.session_state.active_customers.append({"data": new_c, "arrival_time": time.time()})
                 st.rerun()
 
         time.sleep(1)
