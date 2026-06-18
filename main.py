@@ -3,7 +3,8 @@ import random
 import time
 import json
 import os
-
+# Background music, plays on start up
+st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", format="audio/mp3", start_time=0)
 # --- PERSISTENCE SYSTEM (SAVE/LOAD) ---
 SAVE_FILE = "savegame.json"
 
@@ -27,11 +28,13 @@ def load_game():
             st.session_state.credits = data.get("credits", 0)
             st.session_state.ship_level = data.get("ship_level", 1)
             st.session_state.location = data.get("location", "Earth")
+            st.session_state.rebirths = data.get("rebirths", 0)
     else:
         st.session_state.inventory = {}
         st.session_state.credits = 0
         st.session_state.ship_level = 1
         st.session_state.location = "Earth"
+        st.session_state.rebirths = 0
 
 # --- DATA CONFIGURATION ---
 PLANET_INFO = {
@@ -179,7 +182,24 @@ with st.sidebar:
     # Tutorial
     st.write("---")
     st.write("Welcome to Cosmopolitan! Explore different planets, gather ingredients, and cook delicious dishes.")
-
+    # Button for rebirth, 15000*1.5^rebirths
+    cost = 15000 * (1.5 ** st.session_state.rebirths)
+    if st.button(f"Rebirth ({cost} credits)"):
+        if st.session_state.credits >= cost:
+            st.session_state.credits -= cost
+            st.session_state.rebirths += 1
+            # Reset game state
+            st.session_state.inventory.clear()
+            st.session_state.credits = 0
+            st.session_state.ship_level = 1
+            st.session_state.location = "Earth"
+            save_game()
+            st.success("Reborn!")
+            st.rerun()
+        else:
+            st.error("Not enough credits!")
+    st.write(f"Rebirths: {st.session_state.rebirths}")
+    
 def random_event():
     choice = random.choice(list(randomeventdict.keys()))
     event = randomeventdict[choice]
@@ -217,6 +237,8 @@ with tab1:
         time.sleep(1)
         for ing in PLANET_INFO[planet]["ingredients"]:
             st.session_state.inventory[ing] = st.session_state.inventory.get(ing, 0) + 1
+        # Fun visuals!
+        st.balloons()
         st.success(f"Gathered: {', '.join(PLANET_INFO[planet]['ingredients'])}")
         save_game()
         random_event()
