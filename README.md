@@ -4,7 +4,7 @@ Developed for Hackclub's Stardance challenge.
 AI Usage
 ----
 Ollama - Sessions,Logins,Time Mechanic + Cooking, General Framework
-Copilot - Autocomplete (On General Data, like Recipes, Customer and Ingredient Names)
+Copilot - Autocomplete (On General Data, like Recipes, Customer and Ingredient Names), Commit Messages 
 Me - Main Game Logic (Like Credits, Rebirth, Exploring,Cooking,Customers, etc.)
 ----
 Future/Scrapped Ideas:
