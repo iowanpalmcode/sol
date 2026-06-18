@@ -1,6 +1,7 @@
 Cosmopolitan is a small, streamlit-based cooking game that has you traverse multiple planets for rarer and rarer ingredients to ultimately cook.. well.. that's for you to find out. 
 ----
 Developed for Hackclub's Stardance challenge. 
+----
 AI Usage
 ----
 Ollama - Sessions,Logins,Time Mechanic + Cooking, General Framework
