@@ -3,38 +3,7 @@ import random
 import time
 import json
 import os
-# Background music, plays on start up
-st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", format="audio/mp3", start_time=0)
-# --- PERSISTENCE SYSTEM (SAVE/LOAD) ---
-SAVE_FILE = "savegame.json"
-
-def save_game():
-    """Saves the current session state to a JSON file."""
-    save_data = {
-        "inventory": st.session_state.inventory,
-        "credits": st.session_state.credits,
-        "ship_level": st.session_state.ship_level,
-        "location": st.session_state.location,
-    }
-    with open(SAVE_FILE, "w") as f:
-        json.dump(save_data, f)
-
-def load_game():
-    """Loads data from the JSON file into session state."""
-    if os.path.exists(SAVE_FILE):
-        with open(SAVE_FILE, "r") as f:
-            data = json.load(f)
-            st.session_state.inventory = data.get("inventory", {})
-            st.session_state.credits = data.get("credits", 0)
-            st.session_state.ship_level = data.get("ship_level", 1)
-            st.session_state.location = data.get("location", "Earth")
-            st.session_state.rebirths = data.get("rebirths", 0)
-    else:
-        st.session_state.inventory = {}
-        st.session_state.credits = 0
-        st.session_state.ship_level = 1
-        st.session_state.location = "Earth"
-        st.session_state.rebirths = 0
+import streamlit.components.v1 as components
 
 # --- DATA CONFIGURATION ---
 PLANET_INFO = {
@@ -113,7 +82,6 @@ randomeventdict = {
     "Asteroid Mining": {"description": "Found rich minerals!", "effect": lambda: (random.randint(100, 300), {"Asteroid Ore": 1})}
 }
 
-# Updated customers to want MEALS (Recipes) instead of Ingredients
 customers = [
     {"planet": "Earth", "name": "Earthling", "preferences": ["Space Stew"], "credits": 150},
     {"planet": "Earth", "name": "Hungry Man", "preferences": ["Cosmopolitan Ice Cream"], "credits": 150},
@@ -152,54 +120,123 @@ customeremojis = {
     "TRAPPIST-1f": "❄️", "Teegarden's Star b": "🍀"
 }
 
-# --- INITIALIZE SESSION STATE ---
-load_game()
+# --- PERSISTENCE SYSTEM (INDIVIDUAL SAVES) ---
+def get_save_file(username):
+    return f"save_{username.lower().replace(' ', '_')}.json"
+
+def save_game(username):
+    """Saves the current session state to a user-specific JSON file."""
+    save_data = {
+        "inventory": st.session_state.inventory,
+        "credits": st.session_state.credits,
+        "ship_level": st.session_state.ship_level,
+        "location": st.session_state.location,
+        "rebirths": st.session_state.rebirths,
+    }
+    with open(get_save_file(username), "w") as f:
+        json.dump(save_data, f)
+
+def load_game(username):
+    """Loads data from the user-specific JSON file."""
+    filename = get_save_file(username)
+    if os.path.exists(filename):
+        with open(filename, "r") as f:
+            data = json.load(f)
+            st.session_state.inventory = data.get("inventory", {})
+            st.session_state.credits = data.get("credits", 0)
+            st.session_state.ship_level = data.get("ship_level", 1)
+            st.session_state.location = data.get("location", "Earth")
+            st.session_state.rebirths = data.get("rebirths", 0)
+    else:
+        st.session_state.inventory = {}
+        st.session_state.credits = 0
+        st.session_state.ship_level = 1
+        st.session_state.location = "Earth"
+        st.session_state.rebirths = 0
+
+# --- INITIALIZATION ---
+st.set_page_config(page_title="Cosmopolitan", page_icon="🚀", layout="wide")
+
+# Force user to pick a name for individual save files
+if 'username' not in st.session_state:
+    st.title("🚀 Welcome to Cosmopolitan")
+    name = st.text_input("Enter your Pilot Name to begin:", "")
+    if st.button("Start Journey"):
+        if name:
+            st.session_state.username = name
+            st.rerun()
+        else:
+            st.error("Please enter a name!")
+    st.stop()
+
+# Load game after username is established
+if 'game_loaded' not in st.session_state:
+    load_game(st.session_state.username)
+    st.session_state.game_loaded = True
 
 if 'active_customers' not in st.session_state: 
     st.session_state.active_customers = []
+if 'music_enabled' not in st.session_state:
+    st.session_state.music_enabled = True
+if 'reset_step' not in st.session_state:
+    st.session_state.reset_step = 0
 
-st.set_page_config(page_title="Cosmopolitan", page_icon="🚀", layout="wide")
+# --- AUDIO SYSTEM (HIDDEN) ---
+if st.session_state.music_enabled:
+    # This injects a hidden HTML audio player that autoplays
+    audio_html = """
+        <audio autoplay loop style="display:none;">
+            <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mp3">
+        </audio>
+        <script>
+            var audio = document.getElementsByTagName('audio')[0];
+            audio.volume = 0.5;
+        </script>
+    """
+    components.html(audio_html, height=0)
+
 st.title("🚀 Cosmopolitan")
 
-# Removed "Ingredients" tab
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["🌌 Explore", "🍳 Cook","📦 Cargo","📖 Recipes","🥄 Restaurant"])
+# Tabs updated to include Settings
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["🌌 Explore", "🍳 Cook","📦 Cargo","📖 Recipes","🥄 Restaurant", "⚙️ Settings"])
 
 with st.sidebar:
     st.header("Ship Status")
+    st.write(f"**Pilot:** {st.session_state.username}")
     st.write(f"Level: {st.session_state.ship_level}")
     st.write(f"Credits: {st.session_state.credits}")
+    
     cost = st.session_state.ship_level * 100
     if st.button(f"Upgrade Ship ({cost} credits)"):
         if st.session_state.credits >= cost:
             st.session_state.credits -= cost
             st.session_state.ship_level += 1
-            save_game()
+            save_game(st.session_state.username)
             st.success("Ship upgraded!")
             st.rerun()
         else:
             st.error("Not enough credits!")
+            
     st.write(f"Current Location: {st.session_state.location}")
-    # Tutorial
     st.write("---")
-    st.write("Welcome to Cosmopolitan! Explore different planets, gather ingredients, and cook delicious dishes.")
-    # Button for rebirth, 15000*1.5^rebirths
-    cost = 15000 * (1.5 ** st.session_state.rebirths)
-    if st.button(f"Rebirth ({cost} credits)"):
-        if st.session_state.credits >= cost:
-            st.session_state.credits -= cost
+    
+    # Rebirth logic
+    rebirth_cost = 15000 * (1.5 ** st.session_state.rebirths)
+    if st.button(f"Rebirth ({int(rebirth_cost)} credits)"):
+        if st.session_state.credits >= rebirth_cost:
+            st.session_state.credits -= rebirth_cost
             st.session_state.rebirths += 1
-            # Reset game state
             st.session_state.inventory.clear()
             st.session_state.credits = 0
             st.session_state.ship_level = 1
             st.session_state.location = "Earth"
-            save_game()
+            save_game(st.session_state.username)
             st.success("Reborn!")
             st.rerun()
         else:
             st.error("Not enough credits!")
     st.write(f"Rebirths: {st.session_state.rebirths}")
-    
+
 def random_event():
     choice = random.choice(list(randomeventdict.keys()))
     event = randomeventdict[choice]
@@ -218,7 +255,7 @@ def random_event():
         st.session_state.credits += credit_change
         for item, qty in item_change.items():
             st.session_state.inventory[item] = st.session_state.inventory.get(item, 0) + qty
-    save_game()
+    save_game(st.session_state.username)
 
 with tab1:
     st.header("Explore")
@@ -230,6 +267,7 @@ with tab1:
         options = ["Earth", "Mars", "Venus", "55 Cancri e", "WASP-76b", "Kepler-10b", "Gliese 436 b", "CoRoT-7b", "Kepler-22b"]
     else:
         options = list(PLANET_INFO.keys())
+    
     planet = st.selectbox("Select a planet to explore:", options)
     if st.button("Explore"):
         st.session_state.location = planet
@@ -237,10 +275,9 @@ with tab1:
         time.sleep(1)
         for ing in PLANET_INFO[planet]["ingredients"]:
             st.session_state.inventory[ing] = st.session_state.inventory.get(ing, 0) + 1
-        # Fun visuals!
         st.balloons()
         st.success(f"Gathered: {', '.join(PLANET_INFO[planet]['ingredients'])}")
-        save_game()
+        save_game(st.session_state.username)
         random_event()
 
 with tab2:
@@ -252,27 +289,21 @@ with tab2:
             for ing in required:
                 st.session_state.inventory[ing] -= 1
             st.session_state.inventory[recipe] = st.session_state.inventory.get(recipe, 0) + 1
-            save_game()
+            save_game(st.session_state.username)
             st.success(f"Cooked {recipe}!")
         else:
             st.error("Missing ingredients!")
 
 with tab3:
     st.header("Cargo")
-    # Enhanced planet filter
     planet_filter = st.selectbox("Filter cargo by planet of origin:", ["All"] + list(PLANET_INFO.keys()))
-    
-    # Determine which items to show
     all_items = list(st.session_state.inventory.items())
-    
     if planet_filter != "All":
         allowed_ingredients = PLANET_INFO[planet_filter]["ingredients"]
-        # Show items that are either part of that planet's ingredients or are Recipes (since they contain ingredients)
         cargo_options = [item for item, qty in all_items if item in allowed_ingredients]
         st.write(f"Showing items from {planet_filter}:")
     else:
         cargo_options = [item for item, qty in all_items]
-
     if not cargo_options:
         st.write("Cargo hold is empty or no matching items found.")
     for ing in cargo_options:
@@ -288,11 +319,8 @@ with tab4:
     for r in recipe_options:
         st.write(f"**{r}** (Requires: {', '.join(RECIPES[r]['ingredients'])}, Rewards: {RECIPES[r]['credits']} credits)")
 
-# --- RESTAURANT TAB ---
 with tab5:
     st.header("Restaurant")
-    
-    # Check if customers want MEALS the player actually has
     if not st.session_state.active_customers:
         potential = [c for c in customers if all(st.session_state.inventory.get(meal, 0) > 0 for meal in c["preferences"])]
         if potential:
@@ -300,7 +328,7 @@ with tab5:
             for s in selected:
                 st.session_state.active_customers.append({"data": s, "arrival_time": time.time()})
         else:
-            st.write("No customers are visiting right now (maybe cook some meals first!).")
+            st.write("No customers are visiting right now.")
 
     if st.session_state.active_customers:
         container = st.container()
@@ -310,34 +338,24 @@ with tab5:
                 customer = entry["data"]
                 elapsed = time.time() - entry["arrival_time"]
                 remaining = max(0, 30 - int(elapsed))
-                
                 if remaining <= 0:
                     leaving_indices.append(idx)
                     continue
-
                 col1, col2, col3 = st.columns([3, 1, 1])
                 with col1:
                     emoji = customeremojis.get(customer['planet'], "🚀")
-                    # Changed "Wants" to show the actual Meal
                     st.write(f"**{customer['name']}** {emoji} (Wants: {', '.join(customer['preferences'])})")
                 with col2:
                     st.write(f"⏳ {remaining}s")
                 with col3:
                     st.write(f"Reward: {customer['credits']}¢")
                     if st.button(f"Serve", key=f"serve_{idx}"):
-                        # Check if the completed meal is in inventory
                         if all(st.session_state.inventory.get(meal, 0) > 0 for meal in customer["preferences"]):
                             for meal in customer["preferences"]:
                                 st.session_state.inventory[meal] -= 1
                             st.session_state.credits += customer["credits"]
-                            save_game()
+                            save_game(st.session_state.username)
                             st.session_state.active_customers.pop(idx)
-                            
-                            # Try to spawn a replacement
-                            potential = [c for c in customers if all(st.session_state.inventory.get(meal, 0) > 0 for meal in c["preferences"])]
-                            if potential:
-                                new_c = random.choice(potential)
-                                st.session_state.active_customers.append({"data": new_c, "arrival_time": time.time()})
                             st.rerun()
                         else:
                             st.error("You don't have the prepared meal!")
@@ -346,9 +364,53 @@ with tab5:
                 for index in sorted(leaving_indices, reverse=True):
                     cust_who_left = st.session_state.active_customers.pop(index)
                     st.session_state.credits = max(0, st.session_state.credits - 50)
-                    save_game()
-                    st.warning(f"{cust_who_left['data']['name']} left! Lost 50 credits.")
+                    save_game(st.session_state.username)
                 st.rerun()
-
         time.sleep(1)
         st.rerun()
+
+with tab6:
+    st.header("Settings")
+    
+    # 1. Music Toggle
+    st.subheader("Audio")
+    music_on = st.toggle("Enable Background Music", value=st.session_state.music_enabled)
+    if music_on != st.session_state.music_enabled:
+        st.session_state.music_enabled = music_on
+        st.rerun()
+
+    st.write("---")
+    st.subheader("Danger Zone")
+    
+    # 2. Double Confirmation Reset
+    if st.session_state.reset_step == 0:
+        if st.button("Reset All Progress"):
+            st.session_state.reset_step = 1
+            st.rerun()
+    elif st.session_state.reset_step == 1:
+        st.warning("Are you sure you want to wipe your save file?")
+        if st.button("Yes, I'm sure"):
+            st.session_state.reset_step = 2
+            st.rerun()
+        if st.button("No, go back"):
+            st.session_state.reset_step = 0
+            st.rerun()
+    elif st.session_state.reset_step == 2:
+        st.error("ARE YOU ABSOLUTELY SURE? This cannot be undone!")
+        if st.button("YES, WIPE EVERYTHING"):
+            # Clear state
+            st.session_state.inventory = {}
+            st.session_state.credits = 0
+            st.session_state.ship_level = 1
+            st.session_state.location = "Earth"
+            st.session_state.rebirths = 0
+            # Delete the physical file
+            filename = get_save_file(st.session_state.username)
+            if os.path.exists(filename):
+                os.remove(filename)
+            st.session_state.reset_step = 0
+            st.success("Game Reset!")
+            st.rerun()
+        if st.button("Wait, no!"):
+            st.session_state.reset_step = 0
+            st.rerun()
