@@ -9,7 +9,8 @@ AI Usage
 * Me - Main Game Logic (Like Credits, Rebirth, Exploring,Cooking,Customers, etc.)
 ----
 Future/Scrapped Ideas:
-Leaderboard for Credits/Rebirths
-Better playability on mobile and fix whatever's going on with the login screen
-Better visuals and more challenging gameplay, maybe even custom sprites?
-General gameloop similar to Papa's Pizzareria (Having to manually create the food)
+----
+* Leaderboard for Credits/Rebirths
+* Better playability on mobile and fix whatever's going on with the login screen
+* Better visuals and more challenging gameplay, maybe even custom sprites?
+* General gameloop similar to Papa's Pizzareria (Having to manually create the food)
