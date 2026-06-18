@@ -120,24 +120,23 @@ customeremojis = {
     "TRAPPIST-1f": "❄️", "Teegarden's Star b": "🍀"
 }
 
-# --- PERSISTENCE SYSTEM (INDIVIDUAL SAVES) ---
+# --- PERSISTENCE SYSTEM ---
 def get_save_file(username):
     return f"save_{username.lower().replace(' ', '_')}.json"
 
 def save_game(username):
-    """Saves the current session state to a user-specific JSON file."""
     save_data = {
         "inventory": st.session_state.inventory,
         "credits": st.session_state.credits,
         "ship_level": st.session_state.ship_level,
         "location": st.session_state.location,
         "rebirths": st.session_state.rebirths,
+        "password": st.session_state.password,
     }
     with open(get_save_file(username), "w") as f:
         json.dump(save_data, f)
 
 def load_game(username):
-    """Loads data from the user-specific JSON file."""
     filename = get_save_file(username)
     if os.path.exists(filename):
         with open(filename, "r") as f:
@@ -147,27 +146,91 @@ def load_game(username):
             st.session_state.ship_level = data.get("ship_level", 1)
             st.session_state.location = data.get("location", "Earth")
             st.session_state.rebirths = data.get("rebirths", 0)
+            st.session_state.password = data.get("password", "")
     else:
         st.session_state.inventory = {}
         st.session_state.credits = 0
         st.session_state.ship_level = 1
         st.session_state.location = "Earth"
         st.session_state.rebirths = 0
+        # Password is set during the registration phase of login
 
 # --- INITIALIZATION ---
 st.set_page_config(page_title="Cosmopolitan", page_icon="🚀", layout="wide")
 
-# Force user to pick a name for individual save files
+# --- LOGIN SYSTEM WITH VISUALS ---
 if 'username' not in st.session_state:
-    st.title("🚀 Welcome to Cosmopolitan")
-    name = st.text_input("Enter your Pilot Name to begin:", "")
-    if st.button("Start Journey"):
-        if name:
-            st.session_state.username = name
-            st.rerun()
-        else:
-            st.error("Please enter a name!")
-    st.stop()
+    # Landing Page Visuals
+    st.markdown("""
+        <style>
+        .main-title {
+            font-size: 60px !important;
+            text-align: center;
+            color: white;
+            text-shadow: 2px 2px #ff00ff, 4px 4px #00ffff;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    
+    st.markdown('<h1 class="main-title">🚀 COSMOPOLITAN</h1>', unsafe_allow_html=True)
+    # Stunning space visual
+    st.image("https://images.unsplash.com/photo-1462331940025-496a885651ad?q=80&w=2080&auto=format&fit=crop", 
+             use_column_width=True, caption="The Galactic Kitchen Awaits...")
+
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
+    with col2:
+        st.write("---")
+        # We use a state machine for the login process
+        if 'auth_step' not in st.session_state:
+            st.session_state.auth_step = "NAME"
+
+        if st.session_state.auth_step == "NAME":
+            name = st.text_input("Enter your Pilot Name:", "")
+            if st.button("Proceed"):
+                if name:
+                    st.session_state.temp_name = name
+                    # Check if account exists
+                    if os.path.exists(get_save_file(name)):
+                        st.session_state.auth_step = "LOGIN"
+                    else:
+                        st.session_state.auth_step = "REGISTER"
+                    st.rerun()
+                else:
+                    st.error("Name cannot be empty!")
+
+        elif st.session_state.auth_step == "LOGIN":
+            st.info(f"Welcome back, Pilot {st.session_state.temp_name}! Please verify your identity.")
+            pwd = st.text_input("Enter Password:", type="password")
+            if st.button("Login"):
+                # Peek at the password in the file
+                with open(get_save_file(st.session_state.temp_name), "r") as f:
+                    data = json.load(f)
+                    if pwd == data.get("password"):
+                        st.session_state.username = st.session_state.temp_name
+                        st.session_state.password = pwd
+                        st.session_state.auth_step = "COMPLETE"
+                        st.rerun()
+                    else:
+                        st.error("Incorrect password!")
+                
+        elif st.session_state.auth_step == "REGISTER":
+            st.info(f"Welcome, New Pilot! Create your credentials for {st.session_state.temp_name}.")
+            pwd = st.text_input("Create a Password:", type="password")
+            confirm_pwd = st.text_input("Confirm Password:", type="password")
+            if st.button("Initialize Account"):
+                if pwd and pwd == confirm_pwd:
+                    st.session_state.username = st.session_state.temp_name
+                    st.session_state.password = pwd
+                    # Create initial file
+                    load_game(st.session_state.username)
+                    save_game(st.session_state.username)
+                    st.session_state.auth_step = "COMPLETE"
+                    st.rerun()
+                else:
+                    st.error("Passwords do not match or are empty!")
+
+    st.stop() # Stop execution until login is complete
 
 # Load game after username is established
 if 'game_loaded' not in st.session_state:
@@ -183,7 +246,6 @@ if 'reset_step' not in st.session_state:
 
 # --- AUDIO SYSTEM (HIDDEN) ---
 if st.session_state.music_enabled:
-    # This injects a hidden HTML audio player that autoplays
     audio_html = """
         <audio autoplay loop style="display:none;">
             <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mp3">
@@ -197,7 +259,6 @@ if st.session_state.music_enabled:
 
 st.title("🚀 Cosmopolitan")
 
-# Tabs updated to include Settings
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["🌌 Explore", "🍳 Cook","📦 Cargo","📖 Recipes","🥄 Restaurant", "⚙️ Settings"])
 
 with st.sidebar:
@@ -220,7 +281,6 @@ with st.sidebar:
     st.write(f"Current Location: {st.session_state.location}")
     st.write("---")
     
-    # Rebirth logic
     rebirth_cost = 15000 * (1.5 ** st.session_state.rebirths)
     if st.button(f"Rebirth ({int(rebirth_cost)} credits)"):
         if st.session_state.credits >= rebirth_cost:
@@ -372,7 +432,7 @@ with tab5:
 with tab6:
     st.header("Settings")
     
-    # 1. Music Toggle
+    # 1. Audio
     st.subheader("Audio")
     music_on = st.toggle("Enable Background Music", value=st.session_state.music_enabled)
     if music_on != st.session_state.music_enabled:
@@ -380,9 +440,36 @@ with tab6:
         st.rerun()
 
     st.write("---")
-    st.subheader("Danger Zone")
     
-    # 2. Double Confirmation Reset
+    # 2. Change Password
+    st.subheader("Security")
+    if st.button("Change Password"):
+        st.session_state.changing_pwd = True
+    
+    if st.session_state.get('changing_pwd'):
+        with st.expander("Updating Password", expanded=True):
+            old_p = st.text_input("Current Password:", type="password")
+            new_p = st.text_input("New Password:", type="password")
+            conf_p = st.text_input("Confirm New Password:", type="password")
+            
+            if st.button("Update Password"):
+                if old_p == st.session_state.password:
+                    if new_p == conf_p and new_p != "":
+                        st.session_state.password = new_p
+                        save_game(st.session_state.username)
+                        st.success("Password updated successfully!")
+                        st.session_state.changing_pwd = False
+                        st.rerun()
+                    else:
+                        st.error("New passwords do not match or are empty!")
+                else:
+                    st.error("Current password incorrect!")
+            if st.button("Cancel"):
+                st.session_state.changing_pwd = False
+                st.rerun()
+
+    st.write("---")
+    st.subheader("Danger Zone")
     if st.session_state.reset_step == 0:
         if st.button("Reset All Progress"):
             st.session_state.reset_step = 1
@@ -398,13 +485,11 @@ with tab6:
     elif st.session_state.reset_step == 2:
         st.error("ARE YOU ABSOLUTELY SURE? This cannot be undone!")
         if st.button("YES, WIPE EVERYTHING"):
-            # Clear state
             st.session_state.inventory = {}
             st.session_state.credits = 0
             st.session_state.ship_level = 1
             st.session_state.location = "Earth"
             st.session_state.rebirths = 0
-            # Delete the physical file
             filename = get_save_file(st.session_state.username)
             if os.path.exists(filename):
                 os.remove(filename)
